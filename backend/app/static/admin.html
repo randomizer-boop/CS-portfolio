@@ -1,0 +1,977 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#03459B" />
+  <title>ChinaShipments · Админ</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M9 12 L27 29 L15 33 Z' fill='%23111318'/%3E%3Cpath d='M55 12 L37 29 L49 33 Z' fill='%23111318'/%3E%3Ccircle cx='32' cy='38' r='21' fill='%23111318'/%3E%3Cellipse cx='24' cy='37' rx='4.6' ry='6.4' fill='%23FFFF00'/%3E%3Cellipse cx='40' cy='37' rx='4.6' ry='6.4' fill='%23FFFF00'/%3E%3Cellipse cx='24' cy='37' rx='1.5' ry='6.4' fill='%23111318'/%3E%3Cellipse cx='40' cy='37' rx='1.5' ry='6.4' fill='%23111318'/%3E%3C/svg%3E" />
+  <style>
+    :root {
+      --primary: #03459B;
+      --primary-2: #0C56B8;
+      --primary-light: #EAF2FF;
+      --bg: #F6F8FC;
+      --card: #FFFFFF;
+      --border: #DDE5F2;
+      --text: #11213D;
+      --muted: #7990B5;
+      --success-bg: #E9F8EF;
+      --success: #21864D;
+      --warning-bg: #FFF3DF;
+      --warning: #A35E00;
+      --info-bg: #EAF2FF;
+      --danger-bg: #FFE9E9;
+      --danger: #B43B3B;
+      --shadow: 0 10px 30px rgba(17,33,61,0.06);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+
+    /* ---------- Экран входа ---------- */
+    .login-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: none;
+      place-items: center;
+      padding: 20px;
+      background: var(--bg);
+    }
+    .login-screen.show { display: grid; }
+    .login-card {
+      width: min(360px, 100%);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 30px 26px;
+      box-shadow: var(--shadow);
+    }
+    .login-mark {
+      width: 42px;
+      height: 42px;
+      border-radius: 13px;
+      display: grid;
+      place-items: center;
+      background: var(--primary);
+      color: #fff;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+    }
+    .login-title {
+      margin: 16px 0 0;
+      font-size: 21px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .login-sub { margin: 5px 0 22px; font-size: 13px; color: var(--muted); }
+    .login-label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+    .login-input {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 11px 13px;
+      margin-bottom: 14px;
+      background: #fff;
+      color: var(--text);
+      outline: none;
+    }
+    .login-input:focus { border-color: #9DB7DD; box-shadow: 0 0 0 3px rgba(3,69,155,0.08); }
+    .login-btn { width: 100%; padding: 12px; margin-top: 4px; }
+    .login-error {
+      display: none;
+      margin-bottom: 12px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: var(--danger-bg);
+      border: 1px solid #F0C8C8;
+      color: var(--danger);
+      font-size: 13px;
+    }
+    .login-error.show { display: block; }
+
+    #app { display: none; }
+    #app.show { display: block; }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(246,248,252,0.92);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+    .header-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+    .brand-mark {
+      width: 38px;
+      height: 38px;
+      border-radius: 11px;
+      display: grid;
+      place-items: center;
+      background: var(--primary);
+      color: #fff;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+    }
+    .brand-copy { min-width: 0; }
+    .brand-title {
+      font-size: 15px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .brand-subtitle {
+      margin-top: 2px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .header-actions { display: flex; gap: 8px; }
+    .btn {
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--text);
+      border-radius: 10px;
+      padding: 9px 13px;
+      font-size: 13px;
+      transition: .15s ease;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .btn:hover { border-color: #BFD0EA; transform: translateY(-1px); }
+    .btn.primary { background: var(--primary); border-color: var(--primary); color: #fff; }
+    .btn.primary:hover { background: var(--primary-2); }
+    .btn.quiet { color: var(--muted); }
+    .btn.quiet:hover { color: var(--danger); border-color: #F0C8C8; }
+
+    main {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 26px 24px 60px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    .stat {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: var(--shadow);
+    }
+    .stat-label { color: var(--muted); font-size: 12px; display: flex; align-items: center; gap: 7px; }
+    .stat-value { margin-top: 8px; font-size: 28px; font-weight: 700; letter-spacing: -0.03em; }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+    .filters { display: flex; gap: 7px; flex-wrap: wrap; }
+    .filter {
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--muted);
+      padding: 8px 13px;
+      border-radius: 999px;
+      font-size: 13px;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .filter.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .search {
+      min-width: 280px;
+      border: 1px solid var(--border);
+      background: #fff;
+      border-radius: 10px;
+      padding: 10px 13px;
+      outline: none;
+      color: var(--text);
+    }
+    .search:focus { border-color: #9DB7DD; box-shadow: 0 0 0 3px rgba(3,69,155,0.08); }
+
+    .table-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; min-width: 900px; border-collapse: collapse; }
+    th, td {
+      text-align: left;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+    th {
+      background: #FAFBFE;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    tbody tr:hover { background: #FBFCFF; }
+    tbody tr:last-child td { border-bottom: 0; }
+    tbody tr.is-new { background: #FFFBF0; box-shadow: inset 3px 0 0 var(--warning); }
+    tbody tr.is-new:hover { background: #FFF7E4; }
+    .name { font-weight: 600; }
+    .name-row { display: flex; align-items: center; gap: 7px; }
+    .new-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--warning); flex: none;
+    }
+    .phone-cell { display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+    .phone {
+      color: var(--primary);
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .phone:hover { text-decoration: underline; }
+    .copy-btn {
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      padding: 2px 4px;
+      border-radius: 6px;
+      font-size: 13px;
+      line-height: 1;
+    }
+    .copy-btn:hover { color: var(--primary); background: var(--primary-light); }
+    th.sortable { cursor: pointer; user-select: none; }
+    th.sortable:hover { color: var(--primary); }
+    th.sortable .arrow { margin-left: 4px; opacity: .5; }
+    th.sortable.active .arrow { opacity: 1; color: var(--primary); }
+    .msg {
+      max-width: 360px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+    .meta { font-size: 12px; color: var(--muted); white-space: nowrap; }
+
+    /* ---------- Статусы ---------- */
+    .status-cell { display: flex; align-items: center; gap: 9px; }
+    .dot {
+      width: 9px; height: 9px; border-radius: 50%; flex: none;
+    }
+    .dot.s-new { background: #E8A33D; box-shadow: 0 0 0 3px var(--warning-bg); }
+    .dot.s-contacted { background: var(--primary); box-shadow: 0 0 0 3px var(--info-bg); }
+    .dot.s-closed { background: var(--success); box-shadow: 0 0 0 3px var(--success-bg); }
+    .status-select {
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 7px 30px 7px 9px;
+      background: #fff;
+      color: var(--text);
+      min-width: 115px;
+      outline: none;
+      transition: .15s ease;
+    }
+    .status-select:focus { border-color: #9DB7DD; }
+    .status-select.s-new { background: var(--warning-bg); border-color: #F0DCB6; color: var(--warning); }
+    .status-select.s-contacted { background: var(--info-bg); border-color: #C6DBFA; color: var(--primary); }
+    .status-select.s-closed { background: var(--success-bg); border-color: #C2E7D2; color: var(--success); }
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .status-badge.s-new { background: var(--warning-bg); color: var(--warning); }
+    .status-badge.s-contacted { background: var(--info-bg); color: var(--primary); }
+    .status-badge.s-closed { background: var(--success-bg); color: var(--success); }
+
+    .row-actions { display: flex; gap: 6px; }
+    .icon-btn {
+      border: 1px solid var(--border);
+      background: #fff;
+      border-radius: 9px;
+      min-width: 36px;
+      height: 36px;
+      color: var(--muted);
+    }
+    .icon-btn:hover { color: var(--primary); border-color: #BFD0EA; }
+
+    .empty, .loading {
+      padding: 56px 24px;
+      text-align: center;
+      color: var(--muted);
+    }
+    .error {
+      margin-bottom: 14px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: var(--danger-bg);
+      color: var(--danger);
+      border: 1px solid #F0C8C8;
+      display: none;
+      font-size: 13px;
+    }
+
+    .drawer-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(17,33,61,0.34);
+      backdrop-filter: blur(3px);
+      z-index: 50;
+      display: none;
+    }
+    .drawer-backdrop.open { display: block; }
+    .drawer {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: min(500px, 100%);
+      height: 100%;
+      background: #fff;
+      box-shadow: -20px 0 50px rgba(17,33,61,0.12);
+      padding: 24px;
+      overflow: auto;
+    }
+    .drawer-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .drawer-title { font-size: 20px; font-weight: 700; }
+    .drawer-sub { color: var(--muted); font-size: 12px; margin-top: 4px; }
+    .detail-grid { display: grid; gap: 14px; margin-top: 24px; }
+    .detail {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      background: #FCFDFF;
+    }
+    .detail-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+    .detail-value { margin-top: 6px; line-height: 1.55; white-space: pre-wrap; word-break: break-word; }
+    .drawer-footer { margin-top: 22px; display: flex; gap: 8px; flex-wrap: wrap; }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 22px;
+      transform: translateX(-50%) translateY(16px);
+      padding: 11px 15px;
+      border-radius: 10px;
+      background: #16233B;
+      color: #fff;
+      font-size: 13px;
+      opacity: 0;
+      pointer-events: none;
+      transition: .2s ease;
+      z-index: 70;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    .demo-banner {
+      max-width: 1280px;
+      margin: 0 auto 14px;
+      padding: 11px 14px;
+      border-radius: 12px;
+      background: var(--primary-light);
+      border: 1px solid #C6DBFA;
+      color: var(--primary);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+    .demo-pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: #fff;
+      border: 1px solid #C6DBFA;
+      font-size: 11px;
+      font-weight: 700;
+      margin-right: 7px;
+    }
+    .demo-only {
+      display: none;
+    }
+    body.demo .demo-only {
+      display: inline-flex;
+    }
+    body.demo #loginScreen {
+      display: none !important;
+    }
+    body.demo .logout-btn {
+      display: none;
+    }
+
+    @media (max-width: 850px) {
+      .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .search { width: 100%; min-width: 0; }
+      .toolbar { align-items: stretch; }
+    }
+    @media (max-width: 560px) {
+      .header-inner, main { padding-left: 14px; padding-right: 14px; }
+      .brand-subtitle { display: none; }
+      .stats { gap: 8px; }
+      .stat { padding: 14px; }
+      .stat-value { font-size: 24px; }
+    }
+  </style>
+</head>
+<body class="">
+
+  <!-- ===== Экран входа ===== -->
+  <div id="loginScreen" class="login-screen">
+    <form class="login-card" id="loginForm">
+      <div class="login-mark">CS</div>
+      <h1 class="login-title">ChinaShipments · Админ</h1>
+      <p class="login-sub">Панель заявок ChinaShipments</p>
+
+      <label class="login-label" for="loginUser">Логин</label>
+      <input id="loginUser" class="login-input" type="text" name="username" autocomplete="username" autocapitalize="off" spellcheck="false" required />
+
+      <label class="login-label" for="loginPass">Пароль</label>
+      <input id="loginPass" class="login-input" type="password" name="password" autocomplete="current-password" required />
+
+      <div id="loginError" class="login-error"></div>
+
+      <button class="btn primary login-btn" type="submit" id="loginSubmit">Войти</button>
+    </form>
+  </div>
+
+  <!-- ===== Приложение ===== -->
+  <div id="app">
+    <header>
+      <div class="header-inner">
+        <div class="brand">
+          <div class="brand-mark">CS</div>
+          <div class="brand-copy">
+            <div class="brand-title">ChinaShipments · Админ</div>
+            <div class="brand-subtitle">Управление входящими заявками</div>
+          </div>
+        </div>
+        <div class="header-actions">
+          <button class="btn" id="exportBtn" onclick="exportCsv()">Экспорт CSV</button>
+          <button class="btn" onclick="refresh()">Обновить</button>
+          <button class="btn quiet logout-btn" onclick="logout()">Выйти</button>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <div class="demo-banner demo-only">
+        <span class="demo-pill">DEMO</span> Это публичная демонстрация админ-панели. Здесь используются вымышленные заявки, а изменения статусов сохраняются только в текущей сессии браузера.
+      </div>
+      <section class="stats">
+        <div class="stat"><div class="stat-label">Всего заявок</div><div class="stat-value" id="statAll">—</div></div>
+        <div class="stat"><div class="stat-label"><span class="dot s-new"></span>Новые</div><div class="stat-value" id="statNew">—</div></div>
+        <div class="stat"><div class="stat-label"><span class="dot s-contacted"></span>В работе</div><div class="stat-value" id="statContacted">—</div></div>
+        <div class="stat"><div class="stat-label"><span class="dot s-closed"></span>Закрыто</div><div class="stat-value" id="statClosed">—</div></div>
+      </section>
+
+      <div id="error" class="error"></div>
+
+      <div class="toolbar">
+        <div class="filters" id="filters">
+          <button class="filter active" data-filter="all">Все</button>
+          <button class="filter" data-filter="new"><span class="dot s-new"></span>Новые</button>
+          <button class="filter" data-filter="contacted"><span class="dot s-contacted"></span>В работе</button>
+          <button class="filter" data-filter="closed"><span class="dot s-closed"></span>Закрыто</button>
+        </div>
+        <input id="search" class="search" type="search" placeholder="Поиск по имени, телефону или сообщению…" />
+      </div>
+
+      <div class="table-card">
+        <div id="loading" class="loading">Загружаем заявки…</div>
+        <div id="empty" class="empty" style="display:none;">Заявок пока нет</div>
+        <div class="table-wrap" id="tableWrap" style="display:none;">
+          <table>
+            <thead>
+              <tr>
+                <th class="sortable active" id="sortDate" data-sort="created_at">Дата <span class="arrow">↓</span></th>
+                <th>Имя</th>
+                <th>Телефон</th>
+                <th>Задача</th>
+                <th>Статус</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+
+    <div id="drawerBackdrop" class="drawer-backdrop" onclick="closeDrawer(event)">
+      <aside class="drawer" onclick="event.stopPropagation()">
+        <div class="drawer-head">
+          <div>
+            <div class="drawer-title" id="drawerTitle">Заявка</div>
+            <div class="drawer-sub" id="drawerSub"></div>
+          </div>
+          <button class="icon-btn" onclick="closeDrawer()">✕</button>
+        </div>
+
+        <div class="detail-grid">
+          <div class="detail"><div class="detail-label">Имя</div><div class="detail-value" id="detailName">—</div></div>
+          <div class="detail">
+            <div class="detail-label">Телефон</div>
+            <div class="detail-value phone-cell">
+              <span id="detailPhone">—</span>
+              <button class="copy-btn" id="drawerCopyBtn" title="Скопировать номер">⧉</button>
+            </div>
+          </div>
+          <div class="detail"><div class="detail-label">Дополнительная информация</div><div class="detail-value" id="detailMessage">—</div></div>
+          <div class="detail"><div class="detail-label">Статус</div><div class="detail-value" id="detailStatus">—</div></div>
+        </div>
+
+        <div class="drawer-footer">
+          <a id="callBtn" class="btn primary" href="#">Позвонить</a>
+          <a id="waBtn" class="btn" href="#" target="_blank" rel="noopener">WhatsApp</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    window.__CS_ADMIN_DEMO__ = false;
+    const DEMO_MODE = window.__CS_ADMIN_DEMO__ === true;
+    const STATUS_LABELS = { new: "Новая", contacted: "В работе", closed: "Закрыто" };
+    const AUTH_KEY = "cs_admin_auth";
+
+    let allRequests = [];
+    let currentFilter = "all";
+    let currentSearch = "";
+    let toastTimer = null;
+    let sortDir = "desc";
+    let knownIds = null;
+    let pollTimer = null;
+    let authHeader = sessionStorage.getItem(AUTH_KEY) || "";
+
+    const $ = (id) => document.getElementById(id);
+
+    /* ---------- Авторизация ---------- */
+    function makeAuthHeader(user, pass) {
+      return "Basic " + btoa(unescape(encodeURIComponent(user + ":" + pass)));
+    }
+
+    function authFetch(url, options = {}) {
+      const headers = Object.assign({}, options.headers || {});
+      if (authHeader) headers["Authorization"] = authHeader;
+      headers["X-Requested-With"] = "XMLHttpRequest";
+      return fetch(url, Object.assign({}, options, { headers, cache: "no-store" }));
+    }
+
+    async function doLogin(e) {
+      e.preventDefault();
+      const user = $("loginUser").value.trim();
+      const pass = $("loginPass").value;
+      const btn = $("loginSubmit");
+      const err = $("loginError");
+
+      err.classList.remove("show");
+      btn.disabled = true;
+      btn.textContent = "Проверяем…";
+
+      try {
+        const header = makeAuthHeader(user, pass);
+        const res = await fetch("/api/contact-requests", {
+          headers: { Authorization: header, "X-Requested-With": "XMLHttpRequest" },
+          cache: "no-store",
+        });
+
+        if (res.status === 401 || res.status === 403) {
+          err.textContent = "Неверный логин или пароль";
+          err.classList.add("show");
+          return;
+        }
+        if (!res.ok) {
+          err.textContent = "Сервер недоступен. Попробуйте позже.";
+          err.classList.add("show");
+          return;
+        }
+
+        authHeader = header;
+        sessionStorage.setItem(AUTH_KEY, header);
+        $("loginPass").value = "";
+        showApp();
+      } catch {
+        err.textContent = "Нет связи с сервером";
+        err.classList.add("show");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Войти";
+      }
+    }
+
+    function logout(message) {
+      if (DEMO_MODE) return;
+      authHeader = "";
+      sessionStorage.removeItem(AUTH_KEY);
+      clearInterval(pollTimer);
+      pollTimer = null;
+      allRequests = [];
+      knownIds = null;
+      closeDrawer();
+      document.title = "ChinaShipments · Админ";
+      $("app").classList.remove("show");
+      $("loginScreen").classList.add("show");
+      if (message) {
+        $("loginError").textContent = message;
+        $("loginError").classList.add("show");
+      }
+      $("loginPass").value = "";
+      $("loginUser").focus();
+    }
+
+    function showApp() {
+      $("loginScreen").classList.remove("show");
+      if (DEMO_MODE) document.body.classList.add("demo");
+      $("app").classList.add("show");
+      refresh();
+      clearInterval(pollTimer);
+      pollTimer = DEMO_MODE ? null : setInterval(refresh, 30000);
+    }
+
+    function showLogin() {
+      $("app").classList.remove("show");
+      $("loginScreen").classList.add("show");
+      $("loginUser").focus();
+    }
+
+    /* ---------- Данные ---------- */
+    function formatDate(iso) {
+      const d = new Date(iso);
+      return d.toLocaleString("ru-RU", {
+        day: "2-digit", month: "2-digit", year: "numeric",
+        hour: "2-digit", minute: "2-digit"
+      });
+    }
+
+    function escapeHtml(value) {
+      const div = document.createElement("div");
+      div.textContent = value ?? "";
+      return div.innerHTML;
+    }
+
+    function normalize(value) {
+      return String(value ?? "").toLowerCase().trim();
+    }
+
+    function statusClass(status) {
+      return "s-" + (["new", "contacted", "closed"].includes(status) ? status : "new");
+    }
+
+    function updateStats() {
+      const newCount = allRequests.filter(r => r.status === "new").length;
+      $("statAll").textContent = allRequests.length;
+      $("statNew").textContent = newCount;
+      $("statContacted").textContent = allRequests.filter(r => r.status === "contacted").length;
+      $("statClosed").textContent = allRequests.filter(r => r.status === "closed").length;
+      document.title = newCount ? `(${newCount}) ChinaShipments · Админ` : "ChinaShipments · Админ";
+    }
+
+    function getVisibleRequests() {
+      const search = normalize(currentSearch);
+      const filtered = allRequests.filter(r => {
+        const statusOk = currentFilter === "all" || r.status === currentFilter;
+        const haystack = normalize(`${r.name} ${r.phone} ${r.message || ""}`);
+        return statusOk && (!search || haystack.includes(search));
+      });
+      return filtered.sort((a, b) => {
+        const diff = new Date(a.created_at) - new Date(b.created_at);
+        return sortDir === "asc" ? diff : -diff;
+      });
+    }
+
+    const DEMO_REQUESTS = [
+      { id: 101, name: "Алина М.", phone: "+7 777 555-21-14", message: "Нужен поставщик упаковки для косметики, партия около 1 500 штук.", status: "new", created_at: "2026-09-30T10:15:00+08:00" },
+      { id: 102, name: "Руслан К.", phone: "+7 701 321-90-44", message: "Ищем фабрику по мебели для небольшого оптового заказа.", status: "contacted", created_at: "2026-09-29T16:40:00+08:00" },
+      { id: 103, name: "Мария С.", phone: "+7 775 118-64-09", message: "Нужно доставить образцы ткани из Гуанчжоу в Алматы.", status: "new", created_at: "2026-09-29T09:20:00+08:00" },
+      { id: 104, name: "Данияр Т.", phone: "+7 747 430-12-88", message: "Регулярные поставки электроники, интересует железнодорожная доставка.", status: "closed", created_at: "2026-09-28T13:05:00+08:00" },
+      { id: 105, name: "София Р.", phone: "+7 702 884-33-61", message: "Помогите сравнить двух поставщиков обуви и организовать пробную закупку.", status: "contacted", created_at: "2026-09-27T18:30:00+08:00" },
+      { id: 106, name: "Тимур А.", phone: "+7 705 291-45-17", message: "Интересует доставка коммерческого груза из Иу в Астану.", status: "new", created_at: "2026-09-27T11:10:00+08:00" },
+    ];
+
+    async function refreshDemo() {
+      allRequests = allRequests.length ? allRequests : DEMO_REQUESTS.map((request) => ({ ...request }));
+      updateStats();
+      render();
+    }
+
+    async function refresh() {
+      if (DEMO_MODE) { await refreshDemo(); return; }
+      if (!authHeader) { showLogin(); return; }
+
+      $("error").style.display = "none";
+      if (!allRequests.length) {
+        $("loading").style.display = "block";
+        $("tableWrap").style.display = "none";
+        $("empty").style.display = "none";
+      }
+
+      try {
+        const res = await authFetch("/api/contact-requests");
+        if (res.status === 401 || res.status === 403) {
+          logout("Сессия истекла. Войдите снова.");
+          return;
+        }
+        if (!res.ok) throw new Error("Не удалось загрузить заявки");
+        allRequests = await res.json();
+        notifyNewArrivals();
+        updateStats();
+        render();
+      } catch (err) {
+        $("error").textContent = err instanceof Error ? err.message : "Не удалось загрузить заявки";
+        $("error").style.display = "block";
+        $("loading").style.display = "none";
+      }
+    }
+
+    function notifyNewArrivals() {
+      const ids = new Set(allRequests.map(r => r.id));
+      if (knownIds) {
+        const arrivals = allRequests.filter(r => !knownIds.has(r.id));
+        for (const r of arrivals) {
+          showToast(`Новая заявка: ${r.name || "без имени"}`);
+        }
+      }
+      knownIds = ids;
+    }
+
+    function render() {
+      const visible = getVisibleRequests();
+      const rowsEl = $("rows");
+      rowsEl.innerHTML = "";
+      $("loading").style.display = "none";
+
+      if (!visible.length) {
+        $("tableWrap").style.display = "none";
+        $("empty").style.display = "block";
+        return;
+      }
+
+      $("empty").style.display = "none";
+      $("tableWrap").style.display = "block";
+
+      for (const r of visible) {
+        const cls = statusClass(r.status);
+        const tr = document.createElement("tr");
+        if (r.status === "new") tr.classList.add("is-new");
+        tr.innerHTML = `
+          <td class="meta">${formatDate(r.created_at)}</td>
+          <td class="name">
+            <div class="name-row">
+              ${r.status === "new" ? '<span class="new-dot" title="Новая заявка"></span>' : ""}
+              ${escapeHtml(r.name)}
+            </div>
+          </td>
+          <td>
+            <div class="phone-cell">
+              <a class="phone" href="tel:${encodeURIComponent(r.phone)}">${escapeHtml(r.phone)}</a>
+              <button class="copy-btn" data-copy="${escapeHtml(r.phone)}" title="Скопировать номер">⧉</button>
+            </div>
+          </td>
+          <td class="msg">${r.message ? escapeHtml(r.message) : "—"}</td>
+          <td>
+            <div class="status-cell">
+              <span class="dot ${cls}" title="${STATUS_LABELS[r.status] || r.status}"></span>
+              <select class="status-select ${cls}" data-id="${r.id}" aria-label="Статус заявки">
+                <option value="new" ${r.status === "new" ? "selected" : ""}>Новая</option>
+                <option value="contacted" ${r.status === "contacted" ? "selected" : ""}>В работе</option>
+                <option value="closed" ${r.status === "closed" ? "selected" : ""}>Закрыто</option>
+              </select>
+            </div>
+          </td>
+          <td><div class="row-actions"><button class="icon-btn" data-view="${r.id}" title="Подробнее">↗</button></div></td>
+        `;
+        rowsEl.appendChild(tr);
+      }
+
+      rowsEl.querySelectorAll(".status-select").forEach(sel => {
+        sel.addEventListener("change", onStatusChange);
+      });
+      rowsEl.querySelectorAll("[data-view]").forEach(btn => {
+        btn.addEventListener("click", () => openDrawer(Number(btn.getAttribute("data-view"))));
+      });
+      rowsEl.querySelectorAll("[data-copy]").forEach(btn => {
+        btn.addEventListener("click", () => copyPhone(btn.getAttribute("data-copy")));
+      });
+    }
+
+    async function copyPhone(phone) {
+      try {
+        await navigator.clipboard.writeText(phone);
+        showToast("Номер скопирован");
+      } catch {
+        showToast("Не удалось скопировать");
+      }
+    }
+
+    function exportCsv() {
+      const rows = getVisibleRequests();
+      if (!rows.length) {
+        showToast("Нечего экспортировать");
+        return;
+      }
+      const header = ["Дата", "Имя", "Телефон", "Сообщение", "Статус"];
+      const lines = [header.join(";")];
+      for (const r of rows) {
+        const cells = [
+          formatDate(r.created_at),
+          r.name || "",
+          r.phone || "",
+          (r.message || "").replace(/[\r\n;]+/g, " "),
+          STATUS_LABELS[r.status] || r.status,
+        ].map(v => `"${String(v).replace(/"/g, '""')}"`);
+        lines.push(cells.join(";"));
+      }
+      const csv = "\uFEFF" + lines.join("\r\n");
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `zayavki_${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    async function onStatusChange(e) {
+      const id = Number(e.currentTarget.dataset.id);
+      const status = e.currentTarget.value;
+      e.currentTarget.disabled = true;
+
+      try {
+        if (DEMO_MODE) {
+          const updated = allRequests.find((request) => request.id === id);
+          if (!updated) throw new Error("Заявка не найдена");
+          updated.status = status;
+          updateStats();
+          render();
+          showToast(`Демо: статус — ${STATUS_LABELS[status] || status}`);
+          if (Number($("drawerBackdrop").dataset.requestId) === id) openDrawer(id);
+          return;
+        }
+
+        const res = await authFetch(`/api/contact-requests/${id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status }),
+        });
+        if (res.status === 401 || res.status === 403) {
+          logout("Сессия истекла. Войдите снова.");
+          return;
+        }
+        if (!res.ok) throw new Error("Не удалось обновить статус");
+        const updated = await res.json();
+        allRequests = allRequests.map(r => r.id === updated.id ? updated : r);
+        updateStats();
+        render();
+        showToast(`Статус: ${STATUS_LABELS[updated.status] || updated.status}`);
+        if (Number($("drawerBackdrop").dataset.requestId) === id) openDrawer(id);
+      } catch (err) {
+        showToast(err instanceof Error ? err.message : "Не удалось обновить статус");
+        e.currentTarget.disabled = false;
+      }
+    }
+
+    function openDrawer(id) {
+      const r = allRequests.find(item => item.id === id);
+      if (!r) return;
+
+      $("drawerBackdrop").dataset.requestId = String(id);
+      $("drawerTitle").textContent = r.name || "Заявка";
+      $("drawerSub").textContent = `Создана ${formatDate(r.created_at)}`;
+      $("detailName").textContent = r.name || "—";
+      $("detailPhone").textContent = r.phone || "—";
+      $("drawerCopyBtn").onclick = () => copyPhone(r.phone || "");
+      $("detailMessage").textContent = r.message || "Дополнительной информации нет.";
+
+      const cls = statusClass(r.status);
+      $("detailStatus").innerHTML =
+        `<span class="status-badge ${cls}"><span class="dot ${cls}"></span>${escapeHtml(STATUS_LABELS[r.status] || r.status)}</span>`;
+
+      $("callBtn").href = `tel:${encodeURIComponent(r.phone || "")}`;
+
+      const cleanPhone = String(r.phone || "").replace(/[^\d+]/g, "").replace(/^\+/, "");
+      $("waBtn").href = cleanPhone ? `https://wa.me/${cleanPhone}` : "#";
+
+      $("drawerBackdrop").classList.add("open");
+      document.body.style.overflow = "hidden";
+    }
+
+    function closeDrawer(event) {
+      if (event && event.target !== $("drawerBackdrop")) return;
+      $("drawerBackdrop").classList.remove("open");
+      document.body.style.overflow = "";
+    }
+
+    function showToast(message) {
+      clearTimeout(toastTimer);
+      $("toast").textContent = message;
+      $("toast").classList.add("show");
+      toastTimer = setTimeout(() => $("toast").classList.remove("show"), 2200);
+    }
+
+    /* ---------- События ---------- */
+    $("loginForm").addEventListener("submit", doLogin);
+
+    $("filters").addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-filter]");
+      if (!btn) return;
+      currentFilter = btn.dataset.filter;
+      document.querySelectorAll(".filter").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      render();
+    });
+
+    $("search").addEventListener("input", (e) => {
+      currentSearch = e.target.value;
+      render();
+    });
+
+    $("sortDate").addEventListener("click", () => {
+      sortDir = sortDir === "desc" ? "asc" : "desc";
+      $("sortDate").querySelector(".arrow").textContent = sortDir === "desc" ? "↓" : "↑";
+      render();
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeDrawer();
+    });
+
+    if (DEMO_MODE) showApp();
+    else if (authHeader) showApp();
+    else showLogin();
+  </script>
+</body>
+</html>

@@ -1,0 +1,918 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#03459B" />
+  <title>ChinaShipments · Admin Demo</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M9 12 L27 29 L15 33 Z' fill='%23111318'/%3E%3Cpath d='M55 12 L37 29 L49 33 Z' fill='%23111318'/%3E%3Ccircle cx='32' cy='38' r='21' fill='%23111318'/%3E%3Cellipse cx='24' cy='37' rx='4.6' ry='6.4' fill='%23FFFF00'/%3E%3Cellipse cx='40' cy='37' rx='4.6' ry='6.4' fill='%23FFFF00'/%3E%3Cellipse cx='24' cy='37' rx='1.5' ry='6.4' fill='%23111318'/%3E%3Cellipse cx='40' cy='37' rx='1.5' ry='6.4' fill='%23111318'/%3E%3C/svg%3E" />
+  <style>
+    :root {
+      --primary: #03459B;
+      --primary-2: #0C56B8;
+      --primary-light: #EAF2FF;
+      --bg: #F6F8FC;
+      --card: #FFFFFF;
+      --border: #DDE5F2;
+      --text: #11213D;
+      --muted: #7990B5;
+      --success-bg: #E9F8EF;
+      --success: #21864D;
+      --warning-bg: #FFF3DF;
+      --warning: #A35E00;
+      --info-bg: #EAF2FF;
+      --danger-bg: #FFE9E9;
+      --danger: #B43B3B;
+      --shadow: 0 10px 30px rgba(17,33,61,0.06);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+
+    #app { display: block; }
+
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(246,248,252,0.92);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+    .header-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+    .brand-mark {
+      width: 38px;
+      height: 38px;
+      border-radius: 11px;
+      display: grid;
+      place-items: center;
+      background: var(--primary);
+      color: #fff;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+    }
+    .brand-copy { min-width: 0; }
+    .brand-title {
+      font-size: 15px;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .brand-subtitle {
+      margin-top: 2px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .demo-badge {
+      margin-left: auto;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #FFF3DF;
+      border: 1px solid #F1D39A;
+      color: #8B5B00;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .header-actions { display: flex; gap: 8px; }
+    .btn {
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--text);
+      border-radius: 10px;
+      padding: 9px 13px;
+      font-size: 13px;
+      transition: .15s ease;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .btn:hover { border-color: #BFD0EA; transform: translateY(-1px); }
+    .btn.primary { background: var(--primary); border-color: var(--primary); color: #fff; }
+    .btn.primary:hover { background: var(--primary-2); }
+    .btn.quiet { color: var(--muted); }
+    .btn.quiet:hover { color: var(--danger); border-color: #F0C8C8; }
+
+    main {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 20px 24px 48px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 185px) 201px;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .stat {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 11px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      text-align: left;
+      color: var(--text);
+      transition: .15s ease;
+    }
+    .stat:hover { border-color: #BFD0EA; }
+    .stat[data-filter="closed"] { background: #FAFBFE; border-style: dashed; margin-left: 16px; }
+    @media (max-width: 850px) { .stat[data-filter="closed"] { margin-left: 0; } }
+    .stat[data-filter="closed"].active { border-style: solid; background: #fff; }
+    .stat.active { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(3,69,155,0.08); }
+    .stat-label { color: var(--muted); font-size: 12.5px; display: flex; align-items: center; gap: 7px; }
+    .stat-value { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+    .list-title { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    .list-title #filterLabel { font-size: 12px; font-weight: 600; color: var(--primary); background: var(--primary-light); border-radius: 999px; padding: 2px 9px; }
+    .list-title #filterLabel:empty { display: none; }
+    .filter {
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--muted);
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 12.5px;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .filter.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .filter .count { font-size: 11px; font-weight: 700; padding: 1px 6px; border-radius: 999px; background: var(--primary-light); color: var(--primary); }
+    .filter.active .count { background: rgba(255,255,255,0.2); color: #fff; }
+    .search-wrap { position: relative; }
+    .search-wrap::before { content: "⌕"; position: absolute; left: 11px; top: 50%; transform: translateY(-52%); color: var(--muted); font-size: 16px; pointer-events: none; }
+    .kbd { position: absolute; right: 9px; top: 50%; transform: translateY(-50%); font-size: 11px; color: var(--muted); border: 1px solid var(--border); border-radius: 5px; padding: 0 5px; background: #FAFBFE; pointer-events: none; }
+    .search {
+      width: 300px;
+      border: 1px solid var(--border);
+      background: #fff;
+      border-radius: 10px;
+      padding: 8px 30px 8px 32px;
+      font-size: 13px;
+      outline: none;
+      color: var(--text);
+    }
+    .search:focus { border-color: #9DB7DD; box-shadow: 0 0 0 3px rgba(3,69,155,0.08); }
+
+    .table-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; min-width: 880px; border-collapse: collapse; font-size: 14.2px; }
+    th, td {
+      text-align: left;
+      padding: 11px 15px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+    th {
+      background: #FAFBFE;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    tbody tr { cursor: pointer; transition: background .12s ease; }
+    tbody tr:hover { background: #F7FAFF; }
+    tbody tr:last-child td { border-bottom: 0; }
+    tbody tr.is-new { background: #FFFBF0; box-shadow: inset 3px 0 0 var(--warning); }
+    tbody tr.is-new:hover { background: #FFF7E4; }
+    .name { font-weight: 600; }
+    .name-row { display: flex; align-items: center; gap: 9px; white-space: nowrap; }
+    .avatar {
+      width: 30px; height: 30px; border-radius: 50%; flex: none;
+      display: grid; place-items: center;
+      font-size: 11.5px; font-weight: 700;
+    }
+    .new-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--warning); flex: none;
+    }
+    .phone-cell { display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+    .phone {
+      color: var(--primary);
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .phone:hover { text-decoration: underline; }
+    .copy-btn {
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      padding: 2px 4px;
+      border-radius: 6px;
+      font-size: 13px;
+      line-height: 1;
+    }
+    .copy-btn:hover { color: var(--primary); background: var(--primary-light); }
+    th.sortable { cursor: pointer; user-select: none; }
+    th.sortable:hover { color: var(--primary); }
+    th.sortable .arrow { margin-left: 4px; opacity: .5; }
+    th.sortable.active .arrow { opacity: 1; color: var(--primary); }
+    .msg {
+      max-width: 350px;
+      font-size: 13.7px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+    .meta { font-size: 12px; color: var(--muted); white-space: nowrap; }
+
+    /* ---------- Статусы ---------- */
+    .status-cell { display: flex; align-items: center; gap: 9px; }
+    .dot {
+      width: 9px; height: 9px; border-radius: 50%; flex: none;
+    }
+    .dot.s-new { background: #E8A33D; box-shadow: 0 0 0 3px var(--warning-bg); }
+    .dot.s-contacted { background: var(--primary); box-shadow: 0 0 0 3px var(--info-bg); }
+    .dot.s-closed { background: var(--success); box-shadow: 0 0 0 3px var(--success-bg); }
+    .status-select {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 5px 24px 5px 9px;
+      font-size: 13px;
+      background: #fff;
+      color: var(--text);
+      min-width: 100px;
+      outline: none;
+      transition: .15s ease;
+    }
+    .status-select:focus { border-color: #9DB7DD; }
+    .status-select.s-new { background: var(--warning-bg); border-color: #F0DCB6; color: var(--warning); }
+    .status-select.s-contacted { background: var(--info-bg); border-color: #C6DBFA; color: var(--primary); }
+    .status-select.s-closed { background: var(--success-bg); border-color: #C2E7D2; color: var(--success); }
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .status-badge.s-new { background: var(--warning-bg); color: var(--warning); }
+    .status-badge.s-contacted { background: var(--info-bg); color: var(--primary); }
+    .status-badge.s-closed { background: var(--success-bg); color: var(--success); }
+
+    .row-actions { display: flex; gap: 6px; }
+    .icon-btn.pin-btn { filter: grayscale(1); opacity: .35; font-size: 12px; }
+    .icon-btn.pin-btn:hover { opacity: .8; }
+    .icon-btn.pin-btn.pinned { filter: none; opacity: 1; }
+    .icon-btn.pin-btn.pinned { color: var(--primary); background: var(--primary-light); border-color: #C6DBFA; }
+    tbody tr.is-pinned { background: #F4F8FF; box-shadow: inset 3px 0 0 var(--primary); }
+    tbody tr.is-pinned:hover { background: #EDF3FF; }
+    .pin-mark { color: var(--primary); font-size: 12px; flex: none; }
+    .icon-btn {
+      border: 1px solid var(--border);
+      background: #fff;
+      border-radius: 8px;
+      min-width: 32px;
+      height: 32px;
+      font-size: 13.5px;
+      color: var(--muted);
+    }
+    .icon-btn:hover { color: var(--primary); border-color: #BFD0EA; }
+
+    .table-foot {
+      display: flex; justify-content: space-between; align-items: center; gap: 12px;
+      padding: 10px 14px; border-top: 1px solid var(--border);
+      font-size: 12px; color: var(--muted); background: #FAFBFE;
+    }
+    .status-seg { display: flex; gap: 6px; flex-wrap: wrap; }
+    .status-seg button {
+      border: 1px solid var(--border); background: #fff; color: var(--muted);
+      border-radius: 999px; padding: 6px 12px; font-size: 13px;
+      display: inline-flex; align-items: center; gap: 7px;
+    }
+    .status-seg button.on.s-new { background: var(--warning-bg); color: var(--warning); border-color: #F0DCB6; }
+    .status-seg button.on.s-contacted { background: var(--info-bg); color: var(--primary); border-color: #C6DBFA; }
+    .status-seg button.on.s-closed { background: var(--success-bg); color: var(--success); border-color: #C2E7D2; }
+    .note-input {
+      width: 100%; min-height: 84px; resize: vertical; margin-top: 6px;
+      border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px;
+      font: inherit; font-size: 13.5px; color: var(--text); outline: none; background: #fff;
+    }
+    .note-input:focus { border-color: #9DB7DD; box-shadow: 0 0 0 3px rgba(3,69,155,0.08); }
+    .empty, .loading {
+      padding: 56px 24px;
+      text-align: center;
+      color: var(--muted);
+    }
+    .error {
+      margin-bottom: 14px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: var(--danger-bg);
+      color: var(--danger);
+      border: 1px solid #F0C8C8;
+      display: none;
+      font-size: 13px;
+    }
+
+    .drawer-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(17,33,61,0.34);
+      backdrop-filter: blur(3px);
+      z-index: 50;
+      display: none;
+    }
+    .drawer-backdrop.open { display: block; }
+    .drawer {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: min(500px, 100%);
+      height: 100%;
+      background: #fff;
+      box-shadow: -20px 0 50px rgba(17,33,61,0.12);
+      padding: 24px;
+      overflow: auto;
+    }
+    .drawer-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .drawer-title { font-size: 20px; font-weight: 700; }
+    .drawer-sub { color: var(--muted); font-size: 12px; margin-top: 4px; }
+    .detail-grid { display: grid; gap: 14px; margin-top: 24px; }
+    .detail {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      background: #FCFDFF;
+    }
+    .detail-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+    .detail-value { margin-top: 6px; line-height: 1.55; white-space: pre-wrap; word-break: break-word; }
+    .drawer-footer { margin-top: 22px; display: flex; gap: 8px; flex-wrap: wrap; }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 22px;
+      transform: translateX(-50%) translateY(16px);
+      padding: 11px 15px;
+      border-radius: 10px;
+      background: #16233B;
+      color: #fff;
+      font-size: 13px;
+      opacity: 0;
+      pointer-events: none;
+      transition: .2s ease;
+      z-index: 70;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .toast.show.has-action { pointer-events: auto; }
+    .toast { display: flex; align-items: center; gap: 14px; white-space: nowrap; }
+    .toast-action { border: 0; background: transparent; color: #9CC3FF; font-weight: 700; font-size: 13px; padding: 0; }
+    .toast-action:hover { color: #fff; text-decoration: underline; }
+    tbody tr.is-closed td { color: var(--muted); }
+    tbody tr.is-closed .name, tbody tr.is-closed .phone { opacity: .75; }
+
+    .demo-banner {
+      width: fit-content;
+      max-width: 100%;
+      margin: 0 0 14px;
+      padding: 11px 14px;
+      border-radius: 12px;
+      background: var(--primary-light);
+      border: 1px solid #C6DBFA;
+      color: var(--primary);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+    .demo-pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: #fff;
+      border: 1px solid #C6DBFA;
+      font-size: 11px;
+      font-weight: 700;
+      margin-right: 7px;
+    }
+
+    @media (max-width: 850px) {
+      .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 420px; }
+      .search { width: 100%; min-width: 0; }
+      .search-wrap { width: 100%; }
+      .toolbar { align-items: stretch; }
+    }
+    @media (max-width: 560px) {
+      .header-inner, main { padding-left: 14px; padding-right: 14px; }
+      .brand-subtitle { display: none; }
+      .header-inner { gap: 10px; }
+      .header-actions { gap: 6px; }
+      .header-actions .btn { padding: 7px 9px; font-size: 12px; white-space: nowrap; }
+      .brand-copy { display: none; }
+      .brand-mark { width: 32px; height: 32px; border-radius: 9px; font-size: 13px; }
+      .stats { gap: 8px; }
+      .stat { padding: 10px 12px; }
+      .stat-value { font-size: 18px; }
+      .search { width: 100%; }
+      .search-wrap { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== Публичная демонстрация админ-панели ===== -->
+  <div id="app">
+    <header>
+      <div class="header-inner">
+        <div class="brand">
+          <div class="brand-mark">CS</div>
+          <div class="brand-copy">
+            <div class="brand-title">ChinaShipments · Admin Demo</div>
+            <div class="brand-subtitle">Публичная демонстрация CRM-интерфейса</div>
+          </div>
+        </div>
+      <div class="header-actions">
+          <button class="btn" id="exportBtn" onclick="exportCsv()">Экспорт CSV</button>
+          <button class="btn" onclick="refresh()">Сбросить демо</button>
+          <button class="btn quiet" onclick="showToast('Демо: выход отключён')" title="Выйти">Выйти</button>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <div class="demo-banner">
+        <span class="demo-pill">DEMO</span> Вымышленные заявки. Все функции работают, но изменения не сохраняются и сбрасываются при перезагрузке.
+      </div>
+      <section class="stats" id="stats">
+        <button class="stat active" data-filter="active"><span class="stat-label">Активные</span><span class="stat-value" id="statAll">—</span></button>
+        <button class="stat" data-filter="new"><span class="stat-label"><span class="dot s-new"></span>Новые</span><span class="stat-value" id="statNew">—</span></button>
+        <button class="stat" data-filter="contacted"><span class="stat-label"><span class="dot s-contacted"></span>В работе</span><span class="stat-value" id="statContacted">—</span></button>
+        <button class="stat" data-filter="closed"><span class="stat-label"><span class="dot s-closed"></span>Закрыто</span><span class="stat-value" id="statClosed">—</span></button>
+      </section>
+
+      <div id="error" class="error"></div>
+
+      <div class="toolbar">
+        <div class="list-title">Заявки <span id="filterLabel"></span></div>
+        <div class="search-wrap">
+          <input id="search" class="search" type="search" placeholder="Поиск по имени, телефону, задаче" />
+          <span class="kbd" id="searchKbd">/</span>
+        </div>
+      </div>
+
+      <div class="table-card">
+        <div id="loading" class="loading">Загружаем заявки…</div>
+        <div id="empty" class="empty" style="display:none;">Заявок пока нет</div>
+        <div class="table-wrap" id="tableWrap" style="display:none;">
+          <table>
+            <thead>
+              <tr>
+                <th class="sortable active" id="sortDate" data-sort="created_at">Дата <span class="arrow">↓</span></th>
+                <th>Имя</th>
+                <th>Телефон</th>
+                <th>Задача</th>
+                <th>Статус</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="rows"></tbody>
+          </table>
+          <div class="table-foot"><span id="shownCount"></span><span>Клик по строке — карточка заявки</span></div>
+        </div>
+      </div>
+    </main>
+
+    <div id="drawerBackdrop" class="drawer-backdrop" onclick="closeDrawer(event)">
+      <aside class="drawer" onclick="event.stopPropagation()">
+        <div class="drawer-head">
+          <div>
+            <div class="drawer-title" id="drawerTitle">Заявка</div>
+            <div class="drawer-sub" id="drawerSub"></div>
+          </div>
+          <button class="icon-btn" onclick="closeDrawer()">✕</button>
+        </div>
+
+        <div class="detail-grid">
+          <div class="detail"><div class="detail-label">Имя</div><div class="detail-value" id="detailName">—</div></div>
+          <div class="detail">
+            <div class="detail-label">Телефон</div>
+            <div class="detail-value phone-cell">
+              <span id="detailPhone">—</span>
+              <button class="copy-btn" id="drawerCopyBtn" title="Скопировать номер">⧉</button>
+            </div>
+          </div>
+          <div class="detail"><div class="detail-label">Дополнительная информация</div><div class="detail-value" id="detailMessage">—</div></div>
+          <div class="detail"><div class="detail-label">Статус</div><div class="detail-value status-seg" id="detailStatus"></div></div>
+          <div class="detail"><div class="detail-label">Заметка менеджера</div><textarea id="detailNote" class="note-input" placeholder="Например: перезвонить в пятницу, запросить фото образцов…"></textarea></div>
+        </div>
+
+        <div class="drawer-footer">
+          <button id="callBtn" class="btn primary" type="button">Позвонить</button>
+          <button id="waBtn" class="btn" type="button">WhatsApp</button>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    const STATUS_LABELS = { new: "Новая", contacted: "В работе", closed: "Закрыто" };
+
+    let allRequests = [];
+    let currentFilter = "active";
+    let currentSearch = "";
+    let toastTimer = null;
+    let sortDir = "desc";
+
+    const $ = (id) => document.getElementById(id);
+
+    function formatDate(iso) {
+      const d = new Date(iso);
+      return d.toLocaleString("ru-RU", {
+        day: "2-digit", month: "2-digit", year: "numeric",
+        hour: "2-digit", minute: "2-digit"
+      });
+    }
+
+    function escapeHtml(value) {
+      const div = document.createElement("div");
+      div.textContent = value ?? "";
+      return div.innerHTML;
+    }
+
+    function normalize(value) {
+      return String(value ?? "").toLowerCase().trim();
+    }
+
+    const AVATAR_COLORS = [["#EAF2FF", "#03459B"], ["#E9F8EF", "#21864D"], ["#FFF3DF", "#A35E00"], ["#F1ECFF", "#5B3DB5"], ["#E6F7F8", "#11747C"]];
+    function avatarStyle(id) {
+      const [bg, fg] = AVATAR_COLORS[id % AVATAR_COLORS.length];
+      return `background:${bg};color:${fg}`;
+    }
+    function initials(name) {
+      return String(name || "?").trim().split(/\s+/).map(p => p[0]).join("").slice(0, 2).toUpperCase();
+    }
+
+    function setStatus(id, status) {
+      const r = allRequests.find(item => item.id === id);
+      if (!r || r.status === status) return;
+      const prev = r.status;
+      r.status = status;
+      updateStats();
+      render();
+      const undo = { label: "Отменить", fn: () => setStatus(id, prev) };
+      if (status === "closed" && currentFilter !== "closed") {
+        showToast(`${r.name}: заявка закрыта и перенесена в «Закрыто»`, undo);
+      } else if (prev === "closed" && currentFilter === "closed") {
+        showToast(`${r.name}: заявка возвращена в активные`, undo);
+      } else {
+        showToast(`Статус: ${STATUS_LABELS[status] || status}`);
+      }
+      if ($("drawerBackdrop").classList.contains("open") && Number($("drawerBackdrop").dataset.requestId) === id) openDrawer(id);
+    }
+
+    function footerText(shown) {
+      const label = { active: "Активных", new: "Новых", contacted: "В работе", closed: "Закрытых" }[currentFilter];
+      let text = currentSearch ? `Найдено: ${shown}` : `${label}: ${shown}`;
+      if (currentSearch && currentFilter !== "closed") {
+        const q = normalize(currentSearch);
+        const hidden = allRequests.filter(r => r.status === "closed" && normalize(`${r.name} ${r.phone} ${r.message || ""}`).includes(q)).length;
+        if (hidden) text += ` · ещё ${hidden} в «Закрыто»`;
+      }
+      return text;
+    }
+
+    function setFilter(filter) {
+      currentFilter = filter;
+      document.querySelectorAll(".filter, .stat").forEach(b => b.classList.toggle("active", b.dataset.filter === filter));
+      $("filterLabel").textContent = { active: "", new: "Новые", contacted: "В работе", closed: "Закрытые · архив" }[filter] ?? "";
+      render();
+    }
+
+    function statusClass(status) {
+      return "s-" + (["new", "contacted", "closed"].includes(status) ? status : "new");
+    }
+
+    function updateStats() {
+      const newCount = allRequests.filter(r => r.status === "new").length;
+      $("statAll").textContent = allRequests.filter(r => r.status !== "closed").length;
+      $("statNew").textContent = newCount;
+      $("statContacted").textContent = allRequests.filter(r => r.status === "contacted").length;
+      $("statClosed").textContent = allRequests.filter(r => r.status === "closed").length;
+      const counts = { all: allRequests.length };
+      for (const k of ["new", "contacted", "closed"]) counts[k] = allRequests.filter(r => r.status === k).length;
+      document.querySelectorAll("[data-count]").forEach(el => { el.textContent = counts[el.dataset.count]; });
+      document.title = newCount ? `(${newCount}) ChinaShipments · Admin Demo` : "ChinaShipments · Admin Demo";
+    }
+
+    function getVisibleRequests() {
+      const search = normalize(currentSearch);
+      const filtered = allRequests.filter(r => {
+        const statusOk = currentFilter === "active" ? r.status !== "closed" : r.status === currentFilter;
+        const haystack = normalize(`${r.name} ${r.phone} ${r.message || ""}`);
+        return statusOk && (!search || haystack.includes(search));
+      });
+      return filtered.sort((a, b) => {
+        if (!!a.pinned !== !!b.pinned) return a.pinned ? -1 : 1;
+        const diff = new Date(a.created_at) - new Date(b.created_at);
+        return sortDir === "asc" ? diff : -diff;
+      });
+    }
+
+    const DEMO_REQUESTS = [
+      { id: 101, name: "Алина",  phone: "+7 700 000-00-01", message: "Нужен поставщик упаковки для косметики, партия около 1 500 штук.", status: "new",       created_at: "2026-09-30T10:15:00+05:00" },
+      { id: 102, name: "Руслан", phone: "+7 700 000-00-02", message: "Ищем фабрику мебели для небольшого оптового заказа.",               status: "contacted", created_at: "2026-09-29T16:40:00+05:00" },
+      { id: 103, name: "Мария",  phone: "+7 700 000-00-03", message: "Нужно доставить образцы ткани из Гуанчжоу в Алматы.",               status: "new",       created_at: "2026-09-29T09:20:00+05:00" },
+      { id: 104, name: "Данияр", phone: "+7 700 000-00-04", message: "Регулярные поставки электроники, интересует ж/д доставка.",          status: "closed",    created_at: "2026-09-28T13:05:00+05:00" },
+      { id: 105, name: "София",  phone: "+7 700 000-00-05", message: "Сравнить двух поставщиков обуви и организовать пробную закупку.",    status: "contacted", created_at: "2026-09-27T18:30:00+05:00" },
+      { id: 106, name: "Тимур",  phone: "+7 700 000-00-06", message: "Доставка коммерческого груза из Иу в Астану.",                       status: "new",       created_at: "2026-09-27T11:10:00+05:00" },
+      { id: 107, name: "Айгерим",phone: "+7 700 000-00-07", message: "Проверка фабрики и контроль качества перед отгрузкой.",              status: "closed",    created_at: "2026-09-25T15:45:00+05:00" },
+      { id: 109, name: "Камила",  phone: "+7 700 000-00-09", message: "Нужна консолидация грузов от трёх поставщиков в один контейнер.", status: "contacted", created_at: "2026-09-23T17:25:00+05:00" },
+      { id: 110, name: "Артём",   phone: "+7 700 000-00-10", message: "Ищем производителя светодиодных ламп под свой бренд.",             status: "new",       created_at: "2026-09-22T12:40:00+05:00" },
+      { id: 111, name: "Жанна",   phone: "+7 700 000-00-11", message: "Нужна авиадоставка срочной партии запчастей в Шымкент.",          status: "closed",    created_at: "2026-09-21T09:15:00+05:00" },
+      { id: 112, name: "Ерлан",   phone: "+7 700 000-00-12", message: "Интересует выкуп товара с 1688 и доставка до склада в Алматы.",   status: "contacted", created_at: "2026-09-20T15:50:00+05:00" },
+      { id: 108, name: "Олег",   phone: "+7 700 000-00-08", message: null,                                                                  status: "new",       created_at: "2026-09-24T08:55:00+05:00" },
+    ];
+
+    function refreshDemo() {
+      allRequests = DEMO_REQUESTS.map((request) => ({ ...request }));
+      updateStats();
+      render();
+    }
+
+    function refresh() {
+      currentSearch = "";
+      $("search").value = "";
+      $("searchKbd").style.display = "";
+      currentFilter = "active";
+      document.querySelectorAll(".filter, .stat").forEach(b => b.classList.toggle("active", b.dataset.filter === "active"));
+      $("filterLabel").textContent = "";
+      refreshDemo();
+      showToast("Демо-данные сброшены");
+    }
+
+
+    function render() {
+      const visible = getVisibleRequests();
+      const rowsEl = $("rows");
+      rowsEl.innerHTML = "";
+      $("loading").style.display = "none";
+
+      if (!visible.length) {
+        const hiddenClosed = currentSearch && currentFilter !== "closed"
+          ? allRequests.filter(r => r.status === "closed" && normalize(`${r.name} ${r.phone} ${r.message || ""}`).includes(normalize(currentSearch))).length
+          : 0;
+        $("empty").textContent = currentSearch
+          ? (hiddenClosed ? `Здесь совпадений нет — найдено ${hiddenClosed} в «Закрыто»` : "Ничего не найдено")
+          : currentFilter === "closed" ? "Закрытых заявок нет" : "Активных заявок нет — всё обработано";
+        $("tableWrap").style.display = "none";
+        $("empty").style.display = "block";
+        return;
+      }
+
+      $("empty").style.display = "none";
+      $("tableWrap").style.display = "block";
+
+      for (const r of visible) {
+        const cls = statusClass(r.status);
+        const tr = document.createElement("tr");
+        if (r.status === "closed") tr.classList.add("is-closed");
+        if (r.pinned) tr.classList.add("is-pinned");
+        else if (r.status === "new") tr.classList.add("is-new");
+        tr.dataset.id = r.id;
+        tr.innerHTML = `
+          <td class="meta">${formatDate(r.created_at)}</td>
+          <td class="name">
+            <div class="name-row">
+              ${r.pinned ? '<span class="pin-mark" title="Закреплено">📌</span>' : ""}
+              <span class="avatar" style="${avatarStyle(r.id)}">${escapeHtml(initials(r.name))}</span>
+              ${escapeHtml(r.name)}
+              ${r.status === "new" ? '<span class="new-dot" title="Новая заявка"></span>' : ""}
+            </div>
+          </td>
+          <td>
+            <div class="phone-cell">
+              <a class="phone" href="#" data-call="${escapeHtml(r.phone)}">${escapeHtml(r.phone)}</a>
+              <button class="copy-btn" data-copy="${escapeHtml(r.phone)}" title="Скопировать номер">⧉</button>
+            </div>
+          </td>
+          <td class="msg">${r.message ? escapeHtml(r.message) : "—"}</td>
+          <td>
+            <div class="status-cell">
+              <span class="dot ${cls}" title="${STATUS_LABELS[r.status] || r.status}"></span>
+              <select class="status-select ${cls}" data-id="${r.id}" aria-label="Статус заявки">
+                <option value="new" ${r.status === "new" ? "selected" : ""}>Новая</option>
+                <option value="contacted" ${r.status === "contacted" ? "selected" : ""}>В работе</option>
+                <option value="closed" ${r.status === "closed" ? "selected" : ""}>Закрыто</option>
+              </select>
+            </div>
+          </td>
+          <td><div class="row-actions">
+            <button class="icon-btn pin-btn ${r.pinned ? "pinned" : ""}" data-pin="${r.id}" title="${r.pinned ? "Открепить" : "Закрепить наверху"}">📌</button>
+            <button class="icon-btn" data-view="${r.id}" title="Подробнее">↗</button>
+          </div></td>
+        `;
+        rowsEl.appendChild(tr);
+      }
+
+      $("shownCount").textContent = footerText(visible.length);
+      rowsEl.querySelectorAll("tr").forEach(tr => {
+        tr.addEventListener("click", (e) => {
+          if (e.target.closest("a, button, select")) return;
+          openDrawer(Number(tr.dataset.id));
+        });
+      });
+      rowsEl.querySelectorAll(".status-select").forEach(sel => {
+        sel.addEventListener("change", onStatusChange);
+      });
+      rowsEl.querySelectorAll("[data-pin]").forEach(btn => {
+        btn.addEventListener("click", () => togglePin(Number(btn.getAttribute("data-pin"))));
+      });
+      rowsEl.querySelectorAll("[data-view]").forEach(btn => {
+        btn.addEventListener("click", () => openDrawer(Number(btn.getAttribute("data-view"))));
+      });
+      rowsEl.querySelectorAll("[data-call]").forEach(link => {
+        link.addEventListener("click", (e) => {
+          e.preventDefault();
+          showToast(`Демо: в рабочей версии здесь начнётся звонок на ${link.getAttribute("data-call")}`);
+        });
+      });
+      rowsEl.querySelectorAll("[data-copy]").forEach(btn => {
+        btn.addEventListener("click", () => copyPhone(btn.getAttribute("data-copy")));
+      });
+    }
+
+    async function copyPhone(phone) {
+      try {
+        await navigator.clipboard.writeText(phone);
+        showToast("Номер скопирован");
+      } catch {
+        showToast("Не удалось скопировать");
+      }
+    }
+
+    function exportCsv() {
+      const rows = getVisibleRequests();
+      if (!rows.length) {
+        showToast("Нечего экспортировать");
+        return;
+      }
+      const header = ["Дата", "Имя", "Телефон", "Сообщение", "Статус", "Заметка"];
+      const lines = [header.join(";")];
+      for (const r of rows) {
+        const cells = [
+          formatDate(r.created_at),
+          r.name || "",
+          r.phone || "",
+          (r.message || "").replace(/[\r\n;]+/g, " "),
+          STATUS_LABELS[r.status] || r.status,
+          (r.note || "").replace(/[\r\n;]+/g, " "),
+        ].map(v => `"${String(v).replace(/"/g, '""')}"`);
+        lines.push(cells.join(";"));
+      }
+      const csv = "\uFEFF" + lines.join("\r\n");
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `zayavki_${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function onStatusChange(e) {
+      setStatus(Number(e.currentTarget.dataset.id), e.currentTarget.value);
+    }
+
+    function togglePin(id) {
+      const r = allRequests.find(item => item.id === id);
+      if (!r) return;
+      r.pinned = !r.pinned;
+      render();
+      showToast(r.pinned ? `${r.name}: закреплено наверху` : `${r.name}: откреплено`);
+    }
+
+    function openDrawer(id) {
+      const r = allRequests.find(item => item.id === id);
+      if (!r) return;
+
+      $("drawerBackdrop").dataset.requestId = String(id);
+      $("drawerTitle").textContent = r.name || "Заявка";
+      $("drawerSub").textContent = `Создана ${formatDate(r.created_at)}`;
+      $("detailName").textContent = r.name || "—";
+      $("detailPhone").textContent = r.phone || "—";
+      $("drawerCopyBtn").onclick = () => copyPhone(r.phone || "");
+      $("detailMessage").textContent = r.message || "Дополнительной информации нет.";
+
+      $("detailStatus").innerHTML = ["new", "contacted", "closed"].map(k =>
+        `<button type="button" class="s-${k} ${r.status === k ? "on" : ""}" data-set="${k}"><span class="dot s-${k}"></span>${STATUS_LABELS[k]}</button>`
+      ).join("");
+      $("detailStatus").querySelectorAll("[data-set]").forEach(btn => {
+        btn.onclick = () => setStatus(id, btn.dataset.set);
+      });
+      $("detailNote").value = r.note || "";
+      $("detailNote").oninput = (e) => { r.note = e.target.value; };
+
+      $("callBtn").onclick = () => showToast(`Демо: в рабочей версии здесь начнётся звонок на ${r.phone}`);
+      $("waBtn").onclick = () => showToast(`Демо: в рабочей версии откроется WhatsApp-чат с ${r.phone}`);
+
+      $("drawerBackdrop").classList.add("open");
+      document.body.style.overflow = "hidden";
+    }
+
+    function closeDrawer(event) {
+      if (event && event.target !== $("drawerBackdrop")) return;
+      if (!$("drawerBackdrop").classList.contains("open")) return;
+      if (document.activeElement) document.activeElement.blur();
+      $("drawerBackdrop").classList.remove("open");
+      document.body.style.overflow = "";
+    }
+
+    function showToast(message, action) {
+      clearTimeout(toastTimer);
+      const t = $("toast");
+      t.textContent = message;
+      t.classList.toggle("has-action", !!action);
+      if (action) {
+        const btn = document.createElement("button");
+        btn.className = "toast-action";
+        btn.textContent = action.label;
+        btn.onclick = () => { t.classList.remove("show"); action.fn(); };
+        t.appendChild(btn);
+      }
+      t.classList.add("show");
+      toastTimer = setTimeout(() => t.classList.remove("show"), action ? 4500 : 2200);
+    }
+
+
+    /* ---------- События ---------- */
+    $("stats").addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-filter]");
+      if (btn) setFilter(btn.dataset.filter);
+    });
+
+    $("search").addEventListener("input", (e) => {
+      currentSearch = e.target.value;
+      render();
+    });
+
+    $("sortDate").addEventListener("click", () => {
+      sortDir = sortDir === "desc" ? "asc" : "desc";
+      $("sortDate").querySelector(".arrow").textContent = sortDir === "desc" ? "↓" : "↑";
+      render();
+    });
+
+    $("search").addEventListener("focus", () => { $("searchKbd").style.display = "none"; });
+    $("search").addEventListener("blur", () => { if (!$("search").value) $("searchKbd").style.display = ""; });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "/" && !["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement.tagName)) {
+        e.preventDefault();
+        $("search").focus();
+      }
+      if (e.key === "Escape") closeDrawer();
+    });
+
+    refreshDemo();
+  </script>
+</body>
+</html>
